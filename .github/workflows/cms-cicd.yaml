@@ -16,12 +16,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'  # Use a Node.js version compatible with Strapi
+          node-version: '20'  # Use a Node.js version compatible with Strapi
 
       - name: Install dependencies and build Strapi
         run: |
-          npm install
-          npm run build
+          sudo npm install
+           sudo npm run build
 
       - name: Copy files to EC2
         uses: appleboy/scp-action@master
