@@ -1,16 +1,16 @@
-name: CI/CD for Strapi
+name: Deploy to EC2
 
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch
+      - main  # Adjust this to your main branch name
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Set up Node.js
@@ -18,51 +18,53 @@ jobs:
         with:
           node-version: '14'  # Use a Node.js version compatible with Strapi
 
-      - name: Upgrade npm
+      - name: Install dependencies and build Strapi
         run: |
-            cd strapi-project      
-            sudo npm install -g npm@latest
+          npm install
+          npm run build
+        env:
+          NODE_ENV: production  # Ensure the NODE_ENV is set to production
 
-      - name: Install PM2
-        run: |
-              cd strapi-project
-              sudo npm install -g pm2
-              
-            
+      - name: Copy files to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "."
+          target: "/home/ubuntu/Project"
 
-      - name: Deploy to EC2
+      - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Ensure Node.js and npm are installed on the EC2 instance
-            sudo apt update
-            sudo apt install -y nodejs npm
+            # Define project directory
+            PROJECT_DIR="/home/ubuntu/Project"
 
-            # Define project directory on the EC2 instance
-            PROJECT_DIR="/home/ubuntu/Strapi-CICD"
-
-            # Remove existing project directory to avoid conflicts
+            # Remove the existing directory if it exists
             if [ -d "$PROJECT_DIR" ]; then
               rm -rf "$PROJECT_DIR"
             fi
 
-            # Clone the Strapi repository
-            git clone https://github.com/haripriya2413/Strapi-CICD "$PROJECT_DIR"
+            # Clone the repository
+            git clone https://github.com/Zenisis/cms-strapi.git "$PROJECT_DIR"
+
+            # Navigate to the project directory
             cd "$PROJECT_DIR"
 
-            # Install Strapi dependencies
+            # Install dependencies
             npm install
 
-            # Build Strapi (if necessary)
-            
+            # Build the project
+            npm run build || (echo "Build failed" && tail -n 100 /home/runner/.npm/_logs/*-debug.log)
 
-            # Start the Strapi application using PM2
-            pm2 start npm --name "strapi" -- run develop
+            # Restart Strapi using PM2
+            pm2 restart ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
 
-            # Save current PM2 process list
+            # Save the PM2 process list
             pm2 save
 
             # Optional: Configure PM2 to start on system boot
