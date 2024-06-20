@@ -18,54 +18,38 @@ jobs:
         with:
           node-version: '14'  # Use a Node.js version compatible with Strapi
 
-      - name: Install dependencies and build Strapi
-        run: |
-          npm install
-          npm run build
-        env:
-          NODE_ENV: production  # Ensure the NODE_ENV is set to production
+      - name: Install dependencies
+        run: npm install
 
-      - name: Copy files to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "."
-          target: "/home/ubuntu/Project"
-
-      - name: SSH into EC2 and deploy
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Define project directory
+            # Define project directory on the EC2 instance
             PROJECT_DIR="/home/ubuntu/Project"
 
-            # Remove the existing directory if it exists
+            # Remove existing project directory to avoid conflicts
             if [ -d "$PROJECT_DIR" ]; then
-              rm -rf "$PROJECT_DIR"
+              sudo rm -rf "$PROJECT_DIR"
             fi
 
             # Clone the repository
             git clone https://github.com/Zenisis/cms-strapi.git "$PROJECT_DIR"
 
-            # Navigate to the project directory
+            # Change to the project directory
             cd "$PROJECT_DIR"
 
             # Install dependencies
             npm install
 
-            # Build the project
-            npm run build || (echo "Build failed" && tail -n 100 /home/runner/.npm/_logs/*-debug.log)
+            # Build the project (if needed)
+            npm run build
 
-            # Restart Strapi using PM2
+            # Start or restart the application using PM2
             pm2 restart ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
 
-            # Save the PM2 process list
+            # Save PM2 process list
             pm2 save
-
-            # Optional: Configure PM2 to start on system boot
-            pm2 startup
