@@ -46,7 +46,7 @@ jobs:
             npm install
 
             # Build the project (if needed)
-            npm run build
+            npm run build 
 
             # Start or restart the application using PM2
             pm2 restart ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
