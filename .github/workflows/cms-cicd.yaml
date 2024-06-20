@@ -22,6 +22,7 @@ jobs:
         run: |
           cd strapi-project
           npm install
+          npm run build
          
 
       - name: Copy files to EC2
