@@ -19,10 +19,16 @@ jobs:
           node-version: '14'  # Use a Node.js version compatible with Strapi
 
       - name: Upgrade npm
-        run: sudo npm install -g npm@latest
+        run: |
+            cd strapi-project      
+            sudo npm install -g npm@latest
 
       - name: Install PM2
-        run:  sudo npm install -g pm2
+        run: |
+              cd strapi-project
+              sudo npm install -g pm2
+              
+            
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
