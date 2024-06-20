@@ -16,13 +16,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '20'  # Use a Node.js version compatible with Strapi
+          node-version: '14'  # Use a Node.js version compatible with Strapi
 
       - name: Install dependencies and build Strapi
         run: |
-          cd cms-strapi
-          sudo npm install
-          sudo npm run build
+          npm install
+          npm run build
 
       - name: Copy files to EC2
         uses: appleboy/scp-action@master
@@ -30,15 +29,41 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "./"  # Copy the entire project directory
+          source: "."
           target: "/home/ubuntu/Project"
 
-      - name: SSH into EC2 and restart Strapi
+      - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu/Project
-            pm2 restart ecosystem.config.js --env production
+            # Define project directory
+            PROJECT_DIR="/home/ubuntu/Project"
+
+            # Remove the existing directory if it exists
+            if [ -d "$PROJECT_DIR" ]; then
+              rm -rf "$PROJECT_DIR"
+            fi
+
+            # Clone the repository
+            git clone https://github.com/Zenisis/cms-strapi.git "$PROJECT_DIR"
+
+            # Navigate to the project directory
+            cd "$PROJECT_DIR"
+
+            # Install dependencies
+            npm install
+
+            # Build the project
+            npm run build
+
+            # Restart Strapi using PM2
+            pm2 restart ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
+
+            # Save the PM2 process list
+            pm2 save
+
+            # Optional: Configure PM2 to start on system boot
+            pm2 startup
