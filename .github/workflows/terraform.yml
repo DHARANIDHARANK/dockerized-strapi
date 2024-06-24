@@ -29,7 +29,7 @@ jobs:
     - name: Capture instance IP
       id: get_ip
       run: |
-        instance_ip=$(terraform output -raw instance_ip)
+        instance_ip=$(terraform output instance_ip)
         echo "Captured IP: $instance_ip"
           echo "EC2_HOST=$instance_ip" >> $GITHUB_ENV
       working-directory: .
