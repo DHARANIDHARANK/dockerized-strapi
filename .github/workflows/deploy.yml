@@ -15,8 +15,6 @@ jobs:
 
     - name: Package application
       run: |
-        ls 
-        cd strapi-project
         tar -czvf strapi-project.tar.gz strapi-project
         
     - name: Upload to EC2
