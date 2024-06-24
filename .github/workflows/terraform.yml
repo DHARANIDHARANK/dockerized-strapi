@@ -30,8 +30,10 @@ jobs:
       id: get_ip
       run: |
         instance_ip=$(terraform output -raw instance_ip)
-        echo "INSTANCE_IP=$instance_ip" >> $GITHUB_ENV
+        echo "Captured IP: $instance_ip"
+          echo "EC2_HOST=$instance_ip" >> $GITHUB_ENV
       working-directory: .
+
 
     - name: Install GitHub CLI
       run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0 && \
