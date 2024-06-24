@@ -19,10 +19,14 @@ jobs:
         node-version: '18'
 
     - name: Install dependencies
-      run: npm install
+      run: |
+        cd strapi
+        npm install
 
     - name: Package application
-      run: zip -r strapi.zip .
+      run: |
+        cd strapi
+        zip -r ../strapi.zip .
 
     - name: Upload to EC2
       uses: appleboy/scp-action@v0.1.4
