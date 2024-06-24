@@ -47,4 +47,6 @@ jobs:
           tar -xzvf strapi-project.tar.gz
           cd strapi-project
           npm install
+          yarn install
+          yarn build
           pm2 restart all || pm2 start npm --name "strapi" -- run start
