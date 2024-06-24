@@ -96,6 +96,7 @@ resource "aws_route_table_association" "strapi_rta" {
 resource "aws_instance" "strapi" {
   ami                    = "ami-04b70fa74e45c3917" # Update with your preferred AMI ID
   instance_type          = "t2.micro"
+  key_name               = "useast1"
   subnet_id              = aws_subnet.strapi_subnet.id
   security_groups        = [aws_security_group.strapi_sg.id]
   associate_public_ip_address = true
