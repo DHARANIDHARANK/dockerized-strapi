@@ -27,6 +27,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Capture instance IP
+      id: output
       run: echo "INSTANCE_IP=$(terraform output -raw instance_ip)" >> $GITHUB_ENV
       working-directory: .
 
