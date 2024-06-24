@@ -47,7 +47,8 @@ jobs:
           sudo apt update
           sudo apt install -y unzip
           cd /home/ubuntu
-          unzip -o strapi.zip -d strapi
+          rm -rf strapi
+          unzip strapi.zip -d strapi
           cd strapi
           npm install
           pm2 restart all || pm2 start npm --name "strapi" -- run start
