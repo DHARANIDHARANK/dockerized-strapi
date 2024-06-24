@@ -1,7 +1,7 @@
 name: Deploy Strapi
 
 on:
-  push:
+  push: 
     branches:
       - main
 
