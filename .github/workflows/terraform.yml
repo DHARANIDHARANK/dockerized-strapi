@@ -30,12 +30,19 @@ jobs:
       id: get_ip
       run: |
         instance_ip=$(terraform output -raw instance_ip)
-        echo "::set-output name=instance_ip::$instance_ip"
+        echo "INSTANCE_IP=$instance_ip" >> $GITHUB_ENV
       working-directory: .
 
+    - name: Install GitHub CLI
+      run: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0 && \
+           sudo apt-add-repository https://cli.github.com/packages && \
+           sudo apt update && \
+           sudo apt install gh -y
+
+    - name: Authenticate GitHub CLI
+      run: echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+
     - name: Set instance IP as secret
-      uses: peter-evans/create-or-update-secret@v2
-      with:
-        secret: EC2_HOST
-        token: ${{ secrets.GITHUB_TOKEN }}
-        value: ${{ env.INSTANCE_IP }}
+      run: gh secret set EC2_HOST -b"${{ env.INSTANCE_IP }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
