@@ -13,6 +13,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Package application
+      run: |
+        cd strapi-project
+        tar -czvf strapi-project.tar.gz strapi-project
+        
+    - name: Upload to EC2
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "strapi-project.tar.gz"
+        target: "/home/ubuntu/"
+
+
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
@@ -28,8 +43,9 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           sudo apt update
+          sudo apt install -y tar unzip
           cd /home/ubuntu
-          git pull 
+          tar -xzvf strapi-project.tar.gz
           cd strapi-project
           npm install
           pm2 restart all || pm2 start npm --name "strapi" -- run start
