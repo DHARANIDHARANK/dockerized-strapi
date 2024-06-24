@@ -25,7 +25,7 @@ jobs:
 
     - name: Package application
       run: |
-        zip  strapi-project.zip .
+       zip -r strapi.zip strapi-project
 
     - name: Upload to EC2
       uses: appleboy/scp-action@v0.1.4
