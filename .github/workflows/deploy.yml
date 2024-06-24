@@ -20,12 +20,12 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd strapi
+        cd strapi-project
         npm install
 
     - name: Package application
       run: |
-        cd strapi
+        cd strapi-project
         zip -r ../strapi.zip .
 
     - name: Upload to EC2
