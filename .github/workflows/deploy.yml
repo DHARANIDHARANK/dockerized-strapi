@@ -1,0 +1,49 @@
+name: Deploy Strapi
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Package application
+      run: zip -r strapi.zip .
+
+    - name: Upload to EC2
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "strapi.zip"
+        target: "/home/ubuntu/strapi.zip"
+
+    - name: SSH into EC2 and deploy
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          sudo apt update
+          sudo apt install -y unzip
+          cd /home/ubuntu
+          unzip -o strapi.zip -d strapi
+          cd strapi
+          npm install
+          pm2 restart all || pm2 start npm --name "strapi" -- run start
