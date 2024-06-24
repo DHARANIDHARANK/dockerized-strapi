@@ -25,7 +25,7 @@ jobs:
 
     - name: Package application
       run: |
-       zip -r strapi.zip strapi-project
+       tar -czvf strapi-project.tar.gz strapi-project
 
     - name: Upload to EC2
       uses: appleboy/scp-action@v0.1.4
@@ -33,8 +33,8 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "strapi-project.zip"
-        target: "/home/ubuntu/strapi-project.zip"
+        source: "strapi-project.tar.gz"
+        target: "/home/ubuntu/strapi-project.tar.gz"
 
     - name: SSH into EC2 and deploy
       uses: appleboy/ssh-action@v0.1.6
@@ -44,10 +44,11 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           sudo apt update
-          sudo apt install -y unzip
+          sudo apt install -y tar unzip
           cd /home/ubuntu
           rm -rf strapi
-          unzip strapi-project.zip -d strapi-project
-          cd strapi
+          mkdir strapi
+          tar -xzvf strapi-project.tar.gz -C strapi
+          cd strapi/strapi-project
           npm install
           pm2 restart all || pm2 start npm --name "strapi" -- run start
