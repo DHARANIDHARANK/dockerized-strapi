@@ -18,18 +18,7 @@ jobs:
       with:
         node-version: '18'
 
-    - name: Package application
-      run: |
-       tar -czvf strapi-project.tar.gz strapi-project
-
-    - name: Upload to EC2
-      uses: appleboy/scp-action@v0.1.4
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.EC2_SSH_KEY }}
-        source: "strapi-project.tar.gz"
-        target: "/home/ubuntu/strapi-project.tar.gz"
+   
 
     - name: SSH into EC2 and deploy
       uses: appleboy/ssh-action@v0.1.6
@@ -39,9 +28,8 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           sudo apt update
-          sudo apt install -y tar unzip
           cd /home/ubuntu
-          tar -xzvf strapi-project.tar.gz 
+          git pull 
           cd strapi-project
           npm install
           pm2 restart all || pm2 start npm --name "strapi" -- run start
