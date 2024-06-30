@@ -50,3 +50,4 @@ jobs:
           yarn install
           yarn build
           pm2 restart all || pm2 start npm --name "strapi" -- run start
+          npm run start
