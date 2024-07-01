@@ -44,14 +44,13 @@ jobs:
           tar -xzvf strapi-project.tar.gz
           cd strapi-project
           npm install
-          yarn install
-          yarn build
+          npm run build
           pm2 restart all || pm2 start npm --name "strapi" -- run start
           pm2 save
           # Create NGINX config for Strapi
           echo 'server {
               listen 80;
-              server_name 54.221.179.167;
+              server_name deploy-strapi.com;
               
               location / {
                   proxy_pass http://localhost:1337;
@@ -87,4 +86,4 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          curl -I http://54.221.179.167/admin
+          curl -I http://deploy-strapi.com/admin
