@@ -95,7 +95,7 @@ resource "aws_route_table_association" "strapi_rta" {
 # EC2 Instance
 resource "aws_instance" "strapi" {
   ami                    = "ami-04b70fa74e45c3917" # Update with your preferred AMI ID
-  instance_type          = "t2.micro"
+  instance_type          = "t3.medium"
   key_name               = "useast1"
   subnet_id              = aws_subnet.strapi_subnet.id
   security_groups        = [aws_security_group.strapi_sg.id]
